@@ -1,0 +1,50 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input,
+select,
+textarea {
+  background: #ffffff;
+  color: #1a1a1a;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-family: -apple-system, system-ui, sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #15803d;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+}
+
+button {
+  font-family: -apple-system, system-ui, sans-serif;
+  cursor: pointer;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
