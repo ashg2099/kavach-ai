@@ -2,8 +2,8 @@
 
 > *"Kavach" means shield in Hindi. Because every farmer deserves one.*
 
-🌐 **Live Demo:** [kavach-ai.vercel.app](https://kavach-ai.vercel.app)  
-⚙️ **Backend API:** [kavach-ai-jyko.onrender.com](https://kavach-ai-jyko.onrender.com)
+🌐 **Live Demo:** https://kavach-ai-one.vercel.app/ 
+⚙️ **Backend API:** https://kavach-ai-jyko.onrender.com
 
 ---
 
