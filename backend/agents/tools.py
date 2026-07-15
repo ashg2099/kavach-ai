@@ -9,19 +9,32 @@ import json, re, os
 
 def get_coordinates(district: str, state: str) -> tuple:
     import httpx
-    try:
-        resp = httpx.get(
-            "https://geocoding-api.open-meteo.com/v1/search",
-            params={"name": f"{district}, {state}, India", "count": 1, "language": "en"},
-            timeout=10.0
-        )
-        data = resp.json()
-        if data.get("results"):
-            r = data["results"][0]
-            return (r["latitude"], r["longitude"])
-    except Exception:
-        pass
-    return (20.5937, 78.9629)  # fallback: center of India
+    
+    # Try different query formats
+    queries = [
+        district,
+        f"{district}, India",
+        f"{district}, {state}",
+    ]
+    
+    for query in queries:
+        try:
+            resp = httpx.get(
+                "https://geocoding-api.open-meteo.com/v1/search",
+                params={"name": query, "count": 1, "language": "en", "countryCode": "IN"},
+                timeout=10.0
+            )
+            data = resp.json()
+            if data.get("results"):
+                r = data["results"][0]
+                print(f"Geocoded '{district}' via query '{query}': {r['latitude']}, {r['longitude']}")
+                return (r["latitude"], r["longitude"])
+        except Exception as e:
+            print(f"Geocoding error for '{query}': {e}")
+            continue
+    
+    print(f"Geocoding failed for '{district}, {state}' — using India center fallback")
+    return (20.5937, 78.9629)
 
 
 @tool
