@@ -148,9 +148,10 @@ Date: __________________________________"""
 Translate the following crop insurance claim letter to {local_lang}.
 
 Rules:
-- Keep all numbers, rupee amounts (₹), dates, and proper nouns exactly as-is
-- Use the correct formal salutation in {local_lang} for "Dear Sir/Madam" — do NOT literally translate the word "Dear", use the culturally appropriate formal greeting used in official letters in {local_lang}
-- "Subject:" → use the correct formal equivalent word used in official {local_lang} letters (e.g. in Tamil use "பொருள்:", in Telugu use "విషయం:")
+- Keep all numbers, rupee amounts (₹), dates, and proper nouns exactly as-is — especially person names and place names must NOT be transliterated, keep them in English (e.g. "Ramesh" stays "Ramesh", "Thanjavur" stays "Thanjavur")
+- "Dear Sir/Madam" → translate as "மதிப்பிற்குரிய ஐயா/அம்மா," in Tamil. For other languages use the culturally correct formal greeting used in official government letters
+- "Subject:" → translate as "பொருள்:" in Tamil, "విషయం:" in Telugu, "विषय:" in Hindi/Marathi/Rajasthani, "વિષય:" in Gujarati, "ವಿಷಯ:" in Kannada, "বিষয়:" in Bengali, "ਵਿਸ਼ਾ:" in Punjabi
+- The opening address line (e.g. "To, The Authorized Officer") should NOT use the word for "Sender" — translate it as the recipient address block
 - Maintain formal, official letter tone throughout
 - Preserve the letter structure and formatting
 - Only translate, do not add or remove content
