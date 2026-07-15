@@ -7,39 +7,21 @@ import httpx
 from langchain.tools import tool
 import json, re, os
 
-DISTRICT_COORDS = {
-    "nagpur": (21.1458, 79.0882), "amravati": (20.9374, 77.7796),
-    "wardha": (20.7453, 78.6022), "yavatmal": (20.3888, 78.1204),
-    "pune": (18.5204, 73.8567), "nashik": (19.9975, 73.7898),
-    "aurangabad": (19.8762, 75.3433),
-    "ludhiana": (30.9010, 75.8573), "amritsar": (31.6340, 74.8723),
-    "patiala": (30.3398, 76.3869), "bathinda": (30.2110, 74.9455),
-    "guntur": (16.3067, 80.4365), "warangal": (17.9784, 79.5941),
-    "krishna": (16.6099, 80.7214),
-    "lucknow": (26.8467, 80.9462), "varanasi": (25.3176, 82.9739),
-    "agra": (27.1767, 78.0081), "kanpur": (26.4499, 80.3319),
-    "indore": (22.7196, 75.8577), "bhopal": (23.2599, 77.4126),
-    "jabalpur": (23.1815, 79.9864),
-    "jaipur": (26.9124, 75.7873), "jodhpur": (26.2389, 73.0243),
-    "ahmedabad": (23.0225, 72.5714), "surat": (21.1702, 72.8311),
-    "bangalore": (12.9716, 77.5946), "mysore": (12.2958, 76.6394),
-    "hubli": (15.3647, 75.1240),
-    "chennai": (13.0827, 80.2707), "coimbatore": (11.0168, 76.9558),
-    "kolkata": (22.5726, 88.3639), "bardhaman": (23.2324, 87.8615),
-    "gurugram": (28.4595, 77.0266), "karnal": (29.6857, 76.9905),
-    "hisar": (29.1492, 75.7217),
-    "vidisha": (23.5252, 77.8082), "hoshangabad": (22.7456, 77.7272),
-    "nanded": (19.1383, 77.3210), "latur": (18.4088, 76.5604),
-    "latur": (18.4088, 76.5604), "solapur": (17.6805, 75.9064),
-    "sangli": (16.8524, 74.5815), "raichur": (16.2120, 77.3439),
-    "anantapur": (14.6819, 77.6006),
-}
-
 def get_coordinates(district: str, state: str) -> tuple:
-    key = district.lower().strip()
-    if key in DISTRICT_COORDS:
-        return DISTRICT_COORDS[key]
-    return (20.5937, 78.9629)  # Center of India fallback
+    import httpx
+    try:
+        resp = httpx.get(
+            "https://geocoding-api.open-meteo.com/v1/search",
+            params={"name": f"{district}, {state}, India", "count": 1, "language": "en"},
+            timeout=10.0
+        )
+        data = resp.json()
+        if data.get("results"):
+            r = data["results"][0]
+            return (r["latitude"], r["longitude"])
+    except Exception:
+        pass
+    return (20.5937, 78.9629)  # fallback: center of India
 
 
 @tool
