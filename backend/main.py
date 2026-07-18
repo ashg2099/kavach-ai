@@ -9,9 +9,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
 load_dotenv()
+
+from langfuse import Langfuse
+langfuse = Langfuse()
 
 from agents.graph import (
     agent_coverage_checker,
@@ -78,11 +81,23 @@ async def stream_kavach_analysis(input_data: FarmerInput) -> AsyncGenerator[str,
         "weather_event_confirmed": False, "weather_event_details": "",
         "rainfall_mm": 0.0, "claim_amount_inr": 0.0,
         "claim_document_text": "", "escalation_needed": False, "escalation_guidance": "",
+        "claim_document_translated": "",
+        "claim_document_language": "",
         "groundwater_status": "", "groundwater_depth_mbgl": 0.0,
         "crop_risk_score": 0, "alternative_crops": [],
         "income_comparison": {}, "subsidies": [], "transition_plan": "",
         "current_agent": "", "agent_log": [], "error": None, "complete": False,
     }
+    langfuse.trace(
+        name="kavach-claim-analysis",
+        user_id=input_data.farmer_name,
+        metadata={
+            "district": input_data.district,
+            "state": input_data.state,
+            "crop": input_data.crop,
+            "loss_percentage": input_data.loss_percentage,
+        }
+    )
     try:
         prev_len = 0
         for agent_fn in CLAIM_AGENTS:
@@ -128,6 +143,15 @@ async def stream_krishishift(input_data: KrishiShiftInput) -> AsyncGenerator[str
         "income_comparison": {}, "subsidies": [], "transition_plan": "",
         "current_agent": "", "agent_log": [], "error": None, "complete": False,
     }
+    langfuse.trace(
+        name="krishishift-transition-plan",
+        user_id=input_data.farmer_name,
+        metadata={
+            "district": input_data.district,
+            "state": input_data.state,
+            "crop": input_data.crop,
+        }
+    )
     try:
         for agent_fn in [agent_root_cause_analyser, agent_transition_economics, agent_subsidy_hunter, agent_transition_planner]:
             state = await agent_fn(state)

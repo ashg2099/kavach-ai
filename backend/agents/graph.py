@@ -9,6 +9,10 @@ from datetime import datetime, timedelta
 from langchain_groq import ChatGroq
 from langchain.schema import HumanMessage
 from langgraph.graph import StateGraph, END
+from langfuse.decorators import observe
+from langfuse.callback import CallbackHandler
+
+langfuse_handler = CallbackHandler()
 
 from .state import KavachState
 from .tools import (
@@ -25,7 +29,7 @@ llm = ChatGroq(
 
 
 # MODULE 1 
-
+@observe()
 async def agent_coverage_checker(state: KavachState) -> KavachState:
     state["current_agent"] = "Coverage Checker"
     state["agent_log"].append("🔍 Checking PMFBY coverage for your crop and region...")
@@ -43,6 +47,7 @@ async def agent_coverage_checker(state: KavachState) -> KavachState:
     return state
 
 
+@observe()
 async def agent_loss_verifier(state: KavachState) -> KavachState:
     state["current_agent"] = "Loss Verifier"
     state["agent_log"].append("🌦️ Fetching real historical weather data from Open-Meteo...")
@@ -70,7 +75,7 @@ async def agent_loss_verifier(state: KavachState) -> KavachState:
     state["agent_log"].append(state["weather_event_details"])
     return state
 
-
+@observe()
 async def agent_claim_calculator(state: KavachState) -> KavachState:
     state["current_agent"] = "Claim Calculator"
     state["agent_log"].append("🧮 Computing your insurance entitlement...")
@@ -90,7 +95,7 @@ async def agent_claim_calculator(state: KavachState) -> KavachState:
     )
     return state
 
-
+@observe()
 async def agent_doc_drafter(state: KavachState) -> KavachState:
     state["current_agent"] = "Document Drafter"
     state["agent_log"].append("📝 Drafting your insurance claim letter...")
@@ -129,7 +134,7 @@ Yours faithfully,
 Signature: _____________________________
 Date: __________________________________"""
 
-    resp = llm.invoke([HumanMessage(content=prompt)])
+    resp = llm.invoke([HumanMessage(content=prompt)], config={"callbacks": [langfuse_handler]})
     state["claim_document_text"] = resp.content
     STATE_LANGUAGE = {
         "maharashtra": "Marathi", "punjab": "Punjabi",
@@ -157,11 +162,12 @@ Rules:
 - Only translate, do not add or remove content
 
 {state['claim_document_text']}"""
-    trans_resp = llm.invoke([HumanMessage(content=trans_prompt)])
+    trans_resp = llm.invoke([HumanMessage(content=trans_prompt)], config={"callbacks": [langfuse_handler]})
     state["claim_document_translated"] = trans_resp.content
     state["agent_log"].append("✅ Claim document drafted.")
     return state
 
+@observe()
 async def agent_escalation(state: KavachState) -> KavachState:
     state["current_agent"] = "Escalation Agent"
     state["agent_log"].append("⚖️ Preparing legal rights and escalation guidance...")
@@ -176,14 +182,14 @@ In under 200 words provide:
 2. Escalation path: Bank → Insurance Company → District Grievance Cell → Ombudsman → CPGRAMS
 3. Portal links: pmfby.gov.in and pgportal.gov.in
 4. One PMFBY guideline they can quote if claim is rejected"""
-    resp = llm.invoke([HumanMessage(content=prompt)])
+    resp = llm.invoke([HumanMessage(content=prompt)], config={"callbacks": [langfuse_handler]})
     state["escalation_guidance"] = resp.content
     state["agent_log"].append("✅ Escalation guidance ready.")
     return state
 
 
 # MODULE 2 
-
+@observe()
 async def agent_root_cause_analyser(state: KavachState) -> KavachState:
     state["current_agent"] = "Root Cause Analyser"
     state["agent_log"].append("🔬 Analysing groundwater depletion and climate risk...")
@@ -204,7 +210,7 @@ async def agent_root_cause_analyser(state: KavachState) -> KavachState:
     )
     return state
 
-
+@observe()
 async def agent_transition_economics(state: KavachState) -> KavachState:
     state["current_agent"] = "Transition Economics Agent"
     state["agent_log"].append("📈 Comparing crop incomes using live Agmarknet prices...")
@@ -224,7 +230,7 @@ Respond ONLY with valid JSON, no explanation:
 
 Use lowercase crop names."""
 
-    alt_resp = llm.invoke([HumanMessage(content=alt_prompt)])
+    alt_resp = llm.invoke([HumanMessage(content=alt_prompt)], config={"callbacks": [langfuse_handler]})
     import json, re
     match = re.search(r'\{.*\}', alt_resp.content, re.DOTALL)
     if match:
@@ -268,7 +274,7 @@ Use lowercase crop names."""
     )
     return state
 
-
+@observe()
 async def agent_subsidy_hunter(state: KavachState) -> KavachState:
     state["current_agent"] = "Subsidy Hunter"
     state["agent_log"].append("🏆 Finding government schemes you qualify for...")
@@ -283,7 +289,7 @@ async def agent_subsidy_hunter(state: KavachState) -> KavachState:
     state["agent_log"].append(f"💎 Found {len(subsidies)} applicable schemes.")
     return state
 
-
+@observe()
 async def agent_transition_planner(state: KavachState) -> KavachState:
     state["current_agent"] = "Transition Planner"
     state["agent_log"].append("🗺️ Generating your 3-season transition roadmap...")
@@ -311,7 +317,7 @@ Season 3 (TARGET): Full transition, income projection, water savings
 Include: which local mandi or APMC to target, one risk measure per season.
 Open with one motivating line for the farmer."""
 
-    resp = llm.invoke([HumanMessage(content=prompt)])
+    resp = llm.invoke([HumanMessage(content=prompt)], config={"callbacks": [langfuse_handler]})
     state["transition_plan"] = resp.content
     state["complete"] = True
     state["agent_log"].append("✅ Kavach AI analysis complete.")
