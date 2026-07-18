@@ -12,7 +12,8 @@ from langgraph.graph import StateGraph, END
 from langfuse.decorators import observe
 from langfuse.callback import CallbackHandler
 
-langfuse_handler = CallbackHandler()
+def get_langfuse_handler():
+    return CallbackHandler()
 
 from .state import KavachState
 from .tools import (
@@ -134,7 +135,7 @@ Yours faithfully,
 Signature: _____________________________
 Date: __________________________________"""
 
-    resp = llm.invoke([HumanMessage(content=prompt)], config={"callbacks": [langfuse_handler]})
+    resp = llm.invoke([HumanMessage(content=prompt)], config={"callbacks": [get_langfuse_handler()]})
     state["claim_document_text"] = resp.content
     STATE_LANGUAGE = {
         "maharashtra": "Marathi", "punjab": "Punjabi",
@@ -162,7 +163,7 @@ Rules:
 - Only translate, do not add or remove content
 
 {state['claim_document_text']}"""
-    trans_resp = llm.invoke([HumanMessage(content=trans_prompt)], config={"callbacks": [langfuse_handler]})
+    trans_resp = llm.invoke([HumanMessage(content=trans_prompt)], config={"callbacks": [get_langfuse_handler()]})
     state["claim_document_translated"] = trans_resp.content
     state["agent_log"].append("✅ Claim document drafted.")
     return state
@@ -182,7 +183,7 @@ In under 200 words provide:
 2. Escalation path: Bank → Insurance Company → District Grievance Cell → Ombudsman → CPGRAMS
 3. Portal links: pmfby.gov.in and pgportal.gov.in
 4. One PMFBY guideline they can quote if claim is rejected"""
-    resp = llm.invoke([HumanMessage(content=prompt)], config={"callbacks": [langfuse_handler]})
+    resp = llm.invoke([HumanMessage(content=prompt)], config={"callbacks": [get_langfuse_handler()]})
     state["escalation_guidance"] = resp.content
     state["agent_log"].append("✅ Escalation guidance ready.")
     return state
@@ -230,7 +231,7 @@ Respond ONLY with valid JSON, no explanation:
 
 Use lowercase crop names."""
 
-    alt_resp = llm.invoke([HumanMessage(content=alt_prompt)], config={"callbacks": [langfuse_handler]})
+    alt_resp = llm.invoke([HumanMessage(content=alt_prompt)], config={"callbacks": [get_langfuse_handler()]})
     import json, re
     match = re.search(r'\{.*\}', alt_resp.content, re.DOTALL)
     if match:
@@ -317,7 +318,7 @@ Season 3 (TARGET): Full transition, income projection, water savings
 Include: which local mandi or APMC to target, one risk measure per season.
 Open with one motivating line for the farmer."""
 
-    resp = llm.invoke([HumanMessage(content=prompt)], config={"callbacks": [langfuse_handler]})
+    resp = llm.invoke([HumanMessage(content=prompt)], config={"callbacks": [get_langfuse_handler()]})
     state["transition_plan"] = resp.content
     state["complete"] = True
     state["agent_log"].append("✅ Kavach AI analysis complete.")
