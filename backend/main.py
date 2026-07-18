@@ -121,6 +121,7 @@ async def stream_kavach_analysis(input_data: FarmerInput) -> AsyncGenerator[str,
             "claim_document_language": state["claim_document_language"],
         }
         yield f"data: {json.dumps({'type': 'result', 'data': result_data})}\n\n"
+        langfuse.flush()
     except Exception as e:
         yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
     yield f"data: {json.dumps({'type': 'done'})}\n\n"
@@ -168,6 +169,7 @@ async def stream_krishishift(input_data: KrishiShiftInput) -> AsyncGenerator[str
             "transition_plan": state["transition_plan"],
         }
         yield f"data: {json.dumps({'type': 'result', 'data': result_data})}\n\n"
+        langfuse.flush()
     except Exception as e:
         yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
     yield f"data: {json.dumps({'type': 'done'})}\n\n"
