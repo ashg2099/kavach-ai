@@ -308,7 +308,7 @@ def format_reply(result: dict) -> str:
 async def send_wa_message(to: str, text: str):
     url = f"https://graph.facebook.com/v18.0/{WHATSAPP_PHONE_NUMBER_ID}/messages"
     async with httpx.AsyncClient() as client:
-        await client.post(url, json={
+        resp = await client.post(url, json={
             "messaging_product": "whatsapp",
             "to": to,
             "type": "text",
@@ -317,3 +317,4 @@ async def send_wa_message(to: str, text: str):
             "Authorization": f"Bearer {WHATSAPP_TOKEN}",
             "Content-Type": "application/json"
         })
+        print(f"WhatsApp send to {to}: {resp.status_code} — {resp.text}")
