@@ -99,6 +99,16 @@ export default function AnalyzePage() {
   
     window.open(`https://wa.me/?text=${encodeURIComponent(letter)}`, "_blank");
   };
+
+  const handleSendToWhatsAppBot = () => {
+    const name = form.farmer_name || "Farmer";
+    const date = form.sowing_date || "2024-06-15";
+    const desc = form.loss_description || "Crop loss";
+    const land = form.land_size_acres || "2";
+    
+    const msg = `${form.district}, ${form.state}, ${form.crop}, ${form.loss_percentage}, ${name}, ${date}, ${desc}, ${land}`;
+    window.open(`https://wa.me/15551760447?text=${encodeURIComponent(msg)}`, "_blank");
+  };
   
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "12px 16px", borderRadius: "8px",
@@ -204,6 +214,24 @@ export default function AnalyzePage() {
                   value={form.loss_description} onChange={e => setForm(p => ({ ...p, loss_description: e.target.value }))} required />
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleSendToWhatsAppBot}
+              style={{
+                width: "100%",
+                padding: "16px",
+                background: "#FF6B35",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                fontSize: "18px",
+                fontWeight: 700,
+                cursor: "pointer",
+                marginBottom: "12px"
+              }}>
+              🌾 Talk to Kavach AI — WhatsApp Now
+            </button>
 
             <button type="submit" style={{
               width: "100%", padding: "18px", borderRadius: "12px", border: "none",

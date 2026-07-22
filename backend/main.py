@@ -259,14 +259,14 @@ def parse_claim_text(text: str):
         return None
     try:
         return {
-            "farmer_name": "Farmer",
+            "farmer_name": parts[4].strip() if len(parts) > 4 else "Farmer",
             "district": parts[0],
             "state": parts[1],
             "crop": parts[2],
             "loss_percentage": float(parts[3].replace("%", "")),
-            "sowing_date": "2024-06-15",
-            "loss_description": "Crop loss reported via WhatsApp",
-            "land_size_acres": 2.0,
+            "sowing_date": parts[5].strip() if len(parts) > 5 else "2024-06-15",
+            "loss_description": parts[6].strip() if len(parts) > 6 else "Crop loss reported via WhatsApp",
+            "land_size_acres": float(parts[7].strip()) if len(parts) > 7 else 2.0,
         }
     except:
         return None
