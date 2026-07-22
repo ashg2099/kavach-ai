@@ -106,7 +106,7 @@ export default function AnalyzePage() {
     const desc = form.loss_description || "Crop loss";
     const land = form.land_size_acres || "2";
     
-    const msg = `${form.district}, ${form.state}, ${form.crop}, ${form.loss_percentage}, ${name}, ${date}, ${desc}, ${land}`;
+    const msg = `${form.district}, ${form.state}, ${form.crop}, ${lossPercent}, ${name}, ${date}, ${desc}, ${land}`;
     window.open(`https://wa.me/15551760447?text=${encodeURIComponent(msg)}`, "_blank");
   };
   
