@@ -213,6 +213,54 @@ async def verify_webhook(request: Request):
         return PlainTextResponse(params.get("hub.challenge"))
     return JSONResponse({"error": "Forbidden"}, status_code=403)
 
+# ── Conversation state (in-memory) ──────────────────────────────────────
+conversations: dict = {}
+
+STEPS = ["district", "state", "crop", "loss_percentage", "sowing_date", "land_size_acres", "loss_description"]
+
+QUESTIONS = {
+    "district":         "📍 Which *district* are you from?\n(e.g. Latur, Nagpur, Warangal)",
+    "state":            "🗺️ Which *state*?\n(e.g. Maharashtra, Punjab, Telangana)",
+    "crop":             "🌾 Which *crop* did you grow?\n(e.g. Rice, Cotton, Soybean)",
+    "loss_percentage":  "📉 What % of the crop was damaged?\n(just the number, e.g. 60)",
+    "sowing_date":      "📅 When did you sow?\n(format: YYYY-MM-DD, e.g. 2024-06-15)",
+    "land_size_acres":  "🌱 How many *acres* of land?\n(e.g. 2.5)",
+    "loss_description": "💬 Briefly describe what happened\n(e.g. Three weeks of rain flooded the fields)",
+}
+
+WELCOME = (
+    "🌾 *Welcome to Kavach AI!*\n\n"
+    "I'll help you check your crop insurance claim — takes 2 minutes.\n"
+    "Type *reset* anytime to start over.\n\n"
+)
+
+
+def parse_step_value(step: str, text: str):
+    import re
+    text = text.strip()
+    if step == "loss_percentage":
+        val = float(text.replace("%", "").strip())
+        if not 1 <= val <= 100:
+            raise ValueError("out of range")
+        return val
+    if step == "land_size_acres":
+        val = float(text)
+        if val <= 0:
+            raise ValueError("must be positive")
+        return val
+    if step == "sowing_date":
+        text = text.replace("/", "-")
+        if re.match(r"^\d{2}-\d{2}-\d{4}$", text):
+            d, m, y = text.split("-")
+            text = f"{y}-{m}-{d}"
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", text):
+            raise ValueError("invalid date format")
+        return text
+    if len(text) < 2:
+        raise ValueError("too short")
+    return text
+
+
 # ── Receive WhatsApp message (POST) ─────────────────────────────────────
 @app.post("/webhook")
 async def receive_whatsapp(request: Request):
@@ -230,22 +278,76 @@ async def receive_whatsapp(request: Request):
             return JSONResponse({"status": "ok"})
 
         text = msg["text"]["body"].strip()
-        parsed = parse_claim_text(text)
 
-        if not parsed:
-            await send_wa_message(from_number,
-                "🌾 *Welcome to Kavach AI*\n\nSend your claim in this format:\n"
-                "*District, State, Crop, Loss%*\n\nExample:\n_Latur, Maharashtra, Rice, 60_"
-            )
+        # Reset / greet
+        if text.lower() in ("reset", "restart", "new", "start", "hi", "hello", "helo", "hey"):
+            conversations.pop(from_number, None)
+            conversations[from_number] = {"step": "district", "data": {}}
+            await send_wa_message(from_number, WELCOME + QUESTIONS["district"])
             return JSONResponse({"status": "ok"})
 
-        await send_wa_message(from_number,
-            f"⏳ Processing claim for *{parsed['district']}, {parsed['state']}*...\n(~30 seconds)"
-        )
+        # New user
+        if from_number not in conversations:
+            conversations[from_number] = {"step": "district", "data": {}}
+            await send_wa_message(from_number, WELCOME + QUESTIONS["district"])
+            return JSONResponse({"status": "ok"})
 
-        result = await run_kavach(parsed)
-        reply = format_reply(result)
-        await send_wa_message(from_number, reply)
+        conv = conversations[from_number]
+        step = conv["step"]
+
+        # Still processing
+        if step == "processing":
+            await send_wa_message(from_number, "⏳ Still working on your claim, please wait...")
+            return JSONResponse({"status": "ok"})
+
+        # Validate input
+        try:
+            parsed_value = parse_step_value(step, text)
+        except Exception:
+            hints = {
+                "loss_percentage": "Please send a number 1–100 (e.g. *60*)",
+                "land_size_acres": "Please send a number like *2* or *2.5*",
+                "sowing_date":     "Please use format *YYYY-MM-DD* (e.g. 2024-06-15)",
+            }
+            await send_wa_message(from_number, f"❌ {hints.get(step, 'Please try again.')}")
+            return JSONResponse({"status": "ok"})
+
+        conv["data"][step] = parsed_value
+        current_index = STEPS.index(step)
+
+        if current_index < len(STEPS) - 1:
+            next_step = STEPS[current_index + 1]
+            conv["step"] = next_step
+            confirmations = {
+                "district":        f"✅ District: *{parsed_value}*",
+                "state":           f"✅ State: *{parsed_value}*",
+                "crop":            f"✅ Crop: *{parsed_value}*",
+                "loss_percentage": f"✅ Loss: *{parsed_value}%*",
+                "sowing_date":     f"✅ Sowing date: *{parsed_value}*",
+                "land_size_acres": f"✅ Land: *{parsed_value} acres*",
+            }
+            await send_wa_message(from_number, f"{confirmations.get(step, '✅ Got it!')}\n\n{QUESTIONS[next_step]}")
+        else:
+            # All data collected — run pipeline
+            conv["step"] = "processing"
+            d = conv["data"]
+            farmer_data = {
+                "farmer_name":     "Farmer",
+                "district":        d["district"],
+                "state":           d["state"],
+                "crop":            d["crop"],
+                "loss_percentage": float(d["loss_percentage"]),
+                "sowing_date":     d["sowing_date"],
+                "loss_description": d["loss_description"],
+                "land_size_acres": float(d["land_size_acres"]),
+            }
+            await send_wa_message(from_number,
+                f"⏳ Processing claim for *{farmer_data['district']}, {farmer_data['state']}*...\n~30 seconds 🙏"
+            )
+            result = await run_kavach(farmer_data)
+            await send_wa_message(from_number, format_reply(result))
+            await send_wa_message(from_number, "💬 Type *reset* to check another claim.")
+            conversations.pop(from_number, None)
 
     except Exception as e:
         print(f"Webhook error: {e}")
@@ -253,24 +355,6 @@ async def receive_whatsapp(request: Request):
     return JSONResponse({"status": "ok"})
 
 # ── Helpers ──────────────────────────────────────────────────────────────
-def parse_claim_text(text: str):
-    parts = [p.strip() for p in text.split(",")]
-    if len(parts) < 4:
-        return None
-    try:
-        return {
-            "farmer_name": parts[4].strip() if len(parts) > 4 else "Farmer",
-            "district": parts[0],
-            "state": parts[1],
-            "crop": parts[2],
-            "loss_percentage": float(parts[3].replace("%", "")),
-            "sowing_date": parts[5].strip() if len(parts) > 5 else "2024-06-15",
-            "loss_description": parts[6].strip() if len(parts) > 6 else "Crop loss reported via WhatsApp",
-            "land_size_acres": float(parts[7].strip()) if len(parts) > 7 else 2.0,
-        }
-    except:
-        return None
-
 async def run_kavach(parsed: dict):
     state = {
         **parsed,
