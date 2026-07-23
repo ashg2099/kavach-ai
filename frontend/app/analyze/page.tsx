@@ -101,13 +101,7 @@ export default function AnalyzePage() {
   };
 
   const handleSendToWhatsAppBot = () => {
-    const name = form.farmer_name || "Farmer";
-    const date = form.sowing_date || "2024-06-15";
-    const desc = form.loss_description || "Crop loss";
-    const land = form.land_size_acres || "2";
-    
-    const msg = `${form.district}, ${form.state}, ${form.crop}, ${lossPercent}, ${name}, ${date}, ${desc}, ${land}`;
-    window.open(`https://wa.me/15551760447?text=${encodeURIComponent(msg)}`, "_blank");
+    window.open(`https://wa.me/15551760447?text=hi`, "_blank");
   };
   
   const inputStyle: React.CSSProperties = {
