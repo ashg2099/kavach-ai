@@ -218,21 +218,98 @@ conversations: dict = {}
 
 STEPS = ["district", "state", "crop", "loss_percentage", "sowing_date", "land_size_acres", "loss_description"]
 
-QUESTIONS = {
-    "district":         "📍 Which *district* are you from?\n(e.g. Latur, Nagpur, Warangal)",
-    "state":            "🗺️ Which *state*?\n(e.g. Maharashtra, Punjab, Telangana)",
-    "crop":             "🌾 Which *crop* did you grow?\n(e.g. Rice, Cotton, Soybean)",
-    "loss_percentage":  "📉 What % of the crop was damaged?\n(just the number, e.g. 60)",
-    "sowing_date":      "📅 When did you sow?\n(format: YYYY-MM-DD, e.g. 2024-06-15)",
-    "land_size_acres":  "🌱 How many *acres* of land?\n(e.g. 2.5)",
-    "loss_description": "💬 Briefly describe what happened\n(e.g. Three weeks of rain flooded the fields)",
+LANGUAGE_OPTIONS = {
+    "1": "English", "2": "Hindi", "3": "Marathi",
+    "4": "Tamil", "5": "Telugu", "6": "Kannada"
 }
 
-WELCOME = (
+LANGUAGE_WELCOME = (
     "🌾 *Welcome to Kavach AI!*\n\n"
-    "I'll help you check your crop insurance claim — takes 2 minutes.\n"
-    "Type *reset* anytime to start over.\n\n"
+    "Choose your language / अपनी भाषा चुनें:\n\n"
+    "1️⃣ English\n"
+    "2️⃣ हिंदी (Hindi)\n"
+    "3️⃣ मराठी (Marathi)\n"
+    "4️⃣ தமிழ் (Tamil)\n"
+    "5️⃣ తెలుగు (Telugu)\n"
+    "6️⃣ ಕನ್ನಡ (Kannada)\n"
+    "7️⃣ Other language\n\n"
+    "Reply with number / नंबर भेजें"
 )
+
+QUESTIONS_BY_LANG = {
+    "English": {
+        "district":        "📍 Which *district* are you from?\n(e.g. Latur, Nagpur, Warangal)",
+        "state":           "🗺️ Which *state*?\n(e.g. Maharashtra, Punjab, Telangana)",
+        "crop":            "🌾 Which *crop* did you grow?\n(e.g. Rice, Cotton, Soybean)",
+        "loss_percentage": "📉 What % of the crop was damaged?\n(just the number, e.g. 60)",
+        "sowing_date":     "📅 When did you sow?\n(format: YYYY-MM-DD, e.g. 2024-06-15)",
+        "land_size_acres": "🌱 How many *acres* of land?\n(e.g. 2.5)",
+        "loss_description":"💬 Briefly describe what happened",
+    },
+    "Hindi": {
+        "district":        "📍 आप किस *जिले* से हैं?\n(जैसे: लातूर, नागपुर, वारंगल)",
+        "state":           "🗺️ आप किस *राज्य* से हैं?\n(जैसे: महाराष्ट्र, पंजाब, तेलंगाना)",
+        "crop":            "🌾 आपने कौन सी *फसल* उगाई?\n(जैसे: चावल, कपास, सोयाबीन)",
+        "loss_percentage": "📉 फसल का कितने *प्रतिशत* नुकसान हुआ?\n(सिर्फ नंबर, जैसे: 60)",
+        "sowing_date":     "📅 आपने फसल कब बोई?\n(YYYY-MM-DD, जैसे: 2024-06-15)",
+        "land_size_acres": "🌱 आपके पास कितने *एकड़* जमीन है?\n(जैसे: 2.5)",
+        "loss_description":"💬 संक्षेप में बताएं क्या हुआ",
+    },
+    "Marathi": {
+        "district":        "📍 तुम्ही कोणत्या *जिल्ह्यातून* आहात?\n(उदा: लातूर, नागपूर, वर्धा)",
+        "state":           "🗺️ तुमचे *राज्य* कोणते?\n(उदा: महाराष्ट्र, पंजाब, तेलंगणा)",
+        "crop":            "🌾 तुम्ही कोणते *पीक* घेतले?\n(उदा: भात, कापूस, सोयाबीन)",
+        "loss_percentage": "📉 पिकाचे किती *टक्के* नुकसान झाले?\n(फक्त नंबर, उदा: 60)",
+        "sowing_date":     "📅 तुम्ही पीक केव्हा पेरले?\n(YYYY-MM-DD, उदा: 2024-06-15)",
+        "land_size_acres": "🌱 तुमच्याकडे किती *एकर* जमीन आहे?\n(उदा: 2.5)",
+        "loss_description":"💬 थोडक्यात सांगा काय झाले",
+    },
+    "Tamil": {
+        "district":        "📍 நீங்கள் எந்த *மாவட்டத்தை* சேர்ந்தவர்?\n(எ.கா: தஞ்சாவூர், கோயம்புத்தூர்)",
+        "state":           "🗺️ உங்கள் *மாநிலம்* எது?\n(எ.கா: தமிழ்நாடு, மகாராஷ்டிரா)",
+        "crop":            "🌾 நீங்கள் என்ன *பயிர்* விளைவித்தீர்கள்?\n(எ.கா: நெல், பருத்தி, சோளம்)",
+        "loss_percentage": "📉 பயிரில் எத்தனை *சதவீதம்* சேதம்?\n(எண் மட்டும், எ.கா: 60)",
+        "sowing_date":     "📅 நீங்கள் எப்போது விதைத்தீர்கள்?\n(YYYY-MM-DD, எ.கா: 2024-06-15)",
+        "land_size_acres": "🌱 உங்களிடம் எத்தனை *ஏக்கர்* நிலம்?\n(எ.கா: 2.5)",
+        "loss_description":"💬 என்ன நடந்தது என்று சுருக்கமாக சொல்லுங்கள்",
+    },
+    "Telugu": {
+        "district":        "📍 మీరు ఏ *జిల్లా* నుండి వచ్చారు?\n(ఉదా: వరంగల్, నల్గొండ, కృష్ణా)",
+        "state":           "🗺️ మీ *రాష్ట్రం* ఏది?\n(ఉదా: తెలంగాణ, ఆంధ్రప్రదేశ్, మహారాష్ట్ర)",
+        "crop":            "🌾 మీరు ఏ *పంట* పండించారు?\n(ఉదా: వరి, పత్తి, సోయాబీన్)",
+        "loss_percentage": "📉 పంటకు ఎంత *శాతం* నష్టం జరిగింది?\n(సంఖ్య మాత్రమే, ఉదా: 60)",
+        "sowing_date":     "📅 మీరు ఎప్పుడు విత్తనాలు వేశారు?\n(YYYY-MM-DD, ఉదా: 2024-06-15)",
+        "land_size_acres": "🌱 మీకు ఎన్ని *ఎకరాల* భూమి ఉంది?\n(ఉదా: 2.5)",
+        "loss_description":"💬 ఏమి జరిగిందో క్లుప్తంగా వివరించండి",
+    },
+    "Kannada": {
+        "district":        "📍 ನೀವು ಯಾವ *ಜಿಲ್ಲೆ*ಯಿಂದ ಬಂದಿದ್ದೀರಿ?\n(ಉದಾ: ಬೀದರ್, ಗುಲ್ಬರ್ಗ, ರಾಯಚೂರು)",
+        "state":           "🗺️ ನಿಮ್ಮ *ರಾಜ್ಯ* ಯಾವುದು?\n(ಉದಾ: ಕರ್ನಾಟಕ, ಮಹಾರಾಷ್ಟ್ರ, ತೆಲಂಗಾಣ)",
+        "crop":            "🌾 ನೀವು ಯಾವ *ಬೆಳೆ* ಬೆಳೆದಿದ್ದೀರಿ?\n(ಉದಾ: ಭತ್ತ, ಹತ್ತಿ, ಸೋಯಾಬೀನ್)",
+        "loss_percentage": "📉 ಬೆಳೆಗೆ ಎಷ್ಟು *ಶೇಕಡಾ* ಹಾನಿ ಆಗಿದೆ?\n(ಸಂಖ್ಯೆ ಮಾತ್ರ, ಉದಾ: 60)",
+        "sowing_date":     "📅 ನೀವು ಯಾವಾಗ ಬಿತ್ತನೆ ಮಾಡಿದಿರಿ?\n(YYYY-MM-DD, ಉದಾ: 2024-06-15)",
+        "land_size_acres": "🌱 ನಿಮ್ಮ ಬಳಿ ಎಷ್ಟು *ಎಕರೆ* ಜಮೀನು ಇದೆ?\n(ಉದಾ: 2.5)",
+        "loss_description":"💬 ಏನಾಯಿತು ಎಂದು ಸಂಕ್ಷಿಪ್ತವಾಗಿ ವಿವರಿಸಿ",
+    },
+}
+
+PROCESSING_MSG = {
+    "English": "⏳ Processing your claim... ~30 seconds 🙏",
+    "Hindi":   "⏳ आपका दावा प्रोसेस हो रहा है... ~30 सेकंड 🙏",
+    "Marathi": "⏳ तुमचा दावा प्रक्रिया होत आहे... ~30 सेकंद 🙏",
+    "Tamil":   "⏳ உங்கள் கோரிக்கை செயலாக்கப்படுகிறது... ~30 வினாடிகள் 🙏",
+    "Telugu":  "⏳ మీ దావా ప్రాసెస్ అవుతోంది... ~30 సెకన్లు 🙏",
+    "Kannada": "⏳ ನಿಮ್ಮ ಕ್ಲೈಮ್ ಪ್ರಕ್ರಿಯೆಯಾಗುತ್ತಿದೆ... ~30 ಸೆಕೆಂಡ್‌ಗಳು 🙏",
+}
+
+RESET_MSG = {
+    "English": "💬 Type *reset* to check another claim.",
+    "Hindi":   "💬 दूसरा दावा जांचने के लिए *reset* टाइप करें।",
+    "Marathi": "💬 दुसरा दावा तपासण्यासाठी *reset* टाइप करा.",
+    "Tamil":   "💬 மற்றொரு கோரிக்கை சரிபார்க்க *reset* என தட்டச்சு செய்யுங்கள்.",
+    "Telugu":  "💬 మరొక దావా తనిఖీ చేయడానికి *reset* టైప్ చేయండి.",
+    "Kannada": "💬 ಮತ್ತೊಂದು ಕ್ಲೈಮ್ ಪರಿಶೀಲಿಸಲು *reset* ಟೈಪ್ ಮಾಡಿ.",
+}
 
 
 def parse_step_value(step: str, text: str):
@@ -282,34 +359,61 @@ async def receive_whatsapp(request: Request):
         # Reset / greet
         if text.lower() in ("reset", "restart", "new", "start", "hi", "hello", "helo", "hey"):
             conversations.pop(from_number, None)
-            conversations[from_number] = {"step": "district", "data": {}}
-            await send_wa_message(from_number, WELCOME + QUESTIONS["district"])
+            conversations[from_number] = {"step": "language", "data": {}, "language": "English"}
+            await send_wa_message(from_number, LANGUAGE_WELCOME)
             return JSONResponse({"status": "ok"})
 
         # New user
         if from_number not in conversations:
-            conversations[from_number] = {"step": "district", "data": {}}
-            await send_wa_message(from_number, WELCOME + QUESTIONS["district"])
+            conversations[from_number] = {"step": "language", "data": {}, "language": "English"}
+            await send_wa_message(from_number, LANGUAGE_WELCOME)
             return JSONResponse({"status": "ok"})
 
         conv = conversations[from_number]
         step = conv["step"]
+        lang = conv.get("language", "English")
 
         # Still processing
         if step == "processing":
-            await send_wa_message(from_number, "⏳ Still working on your claim, please wait...")
+            await send_wa_message(from_number, PROCESSING_MSG.get(lang, "⏳ Still working, please wait..."))
+            return JSONResponse({"status": "ok"})
+
+        # Language selection
+        if step == "language":
+            if text.strip() in LANGUAGE_OPTIONS:
+                lang = LANGUAGE_OPTIONS[text.strip()]
+                conv["language"] = lang
+                conv["step"] = STEPS[0]
+                await send_wa_message(from_number, f"✅ {lang}!\n\n{QUESTIONS_BY_LANG[lang][STEPS[0]]}")
+            elif text.strip() == "7":
+                conv["step"] = "custom_language"
+                await send_wa_message(from_number, "Please type your language name:\n(e.g. Gujarati, Odia, Punjabi, Bengali)")
+            else:
+                await send_wa_message(from_number, LANGUAGE_WELCOME)
+            return JSONResponse({"status": "ok"})
+
+        # Custom language name entry
+        if step == "custom_language":
+            custom_lang = text.strip().title()
+            conv["language"] = custom_lang
+            conv["step"] = STEPS[0]
+            first_q = await translate_with_groq(QUESTIONS_BY_LANG["English"][STEPS[0]], custom_lang)
+            conv["translated_questions"] = {}
+            conv["translated_questions"][STEPS[0]] = first_q
+            await send_wa_message(from_number, f"✅ {custom_lang}!\n\n{first_q}")
             return JSONResponse({"status": "ok"})
 
         # Validate input
         try:
             parsed_value = parse_step_value(step, text)
         except Exception:
-            hints = {
-                "loss_percentage": "Please send a number 1–100 (e.g. *60*)",
-                "land_size_acres": "Please send a number like *2* or *2.5*",
-                "sowing_date":     "Please use format *YYYY-MM-DD* (e.g. 2024-06-15)",
+            error_hints = {
+                "loss_percentage": {"English": "Send a number 1–100 (e.g. *60*)", "Hindi": "1–100 के बीच नंबर भेजें", "Marathi": "1–100 मधील नंबर पाठवा", "Tamil": "1–100 எண் அனுப்புங்கள்", "Telugu": "1–100 సంఖ్య పంపండి", "Kannada": "1–100 ಸಂಖ್ಯೆ ಕಳಿಸಿ"},
+                "land_size_acres": {"English": "Send a number like *2* or *2.5*", "Hindi": "*2* या *2.5* जैसा नंबर भेजें", "Marathi": "*2* किंवा *2.5* पाठवा", "Tamil": "*2* அல்லது *2.5* அனுப்புங்கள்", "Telugu": "*2* లేదా *2.5* పంపండి", "Kannada": "*2* ಅಥವಾ *2.5* ಕಳಿಸಿ"},
+                "sowing_date": {"English": "Use format *YYYY-MM-DD* (e.g. 2024-06-15)", "Hindi": "*YYYY-MM-DD* फॉर्मेट (जैसे: 2024-06-15)", "Marathi": "*YYYY-MM-DD* (उदा: 2024-06-15)", "Tamil": "*YYYY-MM-DD* (எ.கா: 2024-06-15)", "Telugu": "*YYYY-MM-DD* (ఉదా: 2024-06-15)", "Kannada": "*YYYY-MM-DD* (ಉದಾ: 2024-06-15)"},
             }
-            await send_wa_message(from_number, f"❌ {hints.get(step, 'Please try again.')}")
+            hint = error_hints.get(step, {}).get(lang, "Please try again.")
+            await send_wa_message(from_number, f"❌ {hint}")
             return JSONResponse({"status": "ok"})
 
         conv["data"][step] = parsed_value
@@ -318,41 +422,66 @@ async def receive_whatsapp(request: Request):
         if current_index < len(STEPS) - 1:
             next_step = STEPS[current_index + 1]
             conv["step"] = next_step
-            confirmations = {
-                "district":        f"✅ District: *{parsed_value}*",
-                "state":           f"✅ State: *{parsed_value}*",
-                "crop":            f"✅ Crop: *{parsed_value}*",
-                "loss_percentage": f"✅ Loss: *{parsed_value}%*",
-                "sowing_date":     f"✅ Sowing date: *{parsed_value}*",
-                "land_size_acres": f"✅ Land: *{parsed_value} acres*",
-            }
-            await send_wa_message(from_number, f"{confirmations.get(step, '✅ Got it!')}\n\n{QUESTIONS[next_step]}")
+            lang = conv.get("language", "English")
+            if lang in QUESTIONS_BY_LANG:
+                next_q = QUESTIONS_BY_LANG[lang][next_step]
+            else:
+                # Custom language — translate on the fly
+                cached = conv.get("translated_questions", {})
+                if next_step not in cached:
+                    cached[next_step] = await translate_with_groq(QUESTIONS_BY_LANG["English"][next_step], lang)
+                    conv["translated_questions"] = cached
+                next_q = cached[next_step]
+            await send_wa_message(from_number, f"✅ Got it!\n\n{next_q}")
         else:
             # All data collected — run pipeline
             conv["step"] = "processing"
             d = conv["data"]
             farmer_data = {
-                "farmer_name":     "Farmer",
-                "district":        d["district"],
-                "state":           d["state"],
-                "crop":            d["crop"],
+                "farmer_name": "Farmer",
+                "district": d["district"], "state": d["state"], "crop": d["crop"],
                 "loss_percentage": float(d["loss_percentage"]),
-                "sowing_date":     d["sowing_date"],
+                "sowing_date": d["sowing_date"],
                 "loss_description": d["loss_description"],
                 "land_size_acres": float(d["land_size_acres"]),
             }
-            await send_wa_message(from_number,
-                f"⏳ Processing claim for *{farmer_data['district']}, {farmer_data['state']}*...\n~30 seconds 🙏"
-            )
+            await send_wa_message(from_number, PROCESSING_MSG.get(lang, PROCESSING_MSG["English"]))
             result = await run_kavach(farmer_data)
+
+            # Send summary
             await send_wa_message(from_number, format_reply(result))
-            await send_wa_message(from_number, "💬 Type *reset* to check another claim.")
+
+            # Send full claim letter if claim is valid
+            if result.get("weather_event_confirmed") and result.get("claim_amount_inr", 0) > 0:
+                letter = result.get("claim_document_translated") or result.get("claim_document_text", "")
+                if letter:
+                    await send_long_message(from_number, f"📄 *Your Claim Letter*\n\n{letter}")
+
+            await send_wa_message(from_number, RESET_MSG.get(lang, RESET_MSG["English"]))
             conversations.pop(from_number, None)
 
     except Exception as e:
         print(f"Webhook error: {e}")
-
     return JSONResponse({"status": "ok"})
+
+
+async def send_long_message(to: str, text: str, chunk_size: int = 4000):
+    if len(text) <= chunk_size:
+        await send_wa_message(to, text)
+        return
+    parts = []
+    while text:
+        if len(text) <= chunk_size:
+            parts.append(text); break
+        split_at = text.rfind('\n', 0, chunk_size)
+        if split_at == -1:
+            split_at = chunk_size
+        parts.append(text[:split_at])
+        text = text[split_at:].lstrip('\n')
+    for i, part in enumerate(parts):
+        prefix = f"📄 *Claim Letter ({i+1}/{len(parts)})*\n\n" if len(parts) > 1 else ""
+        await send_wa_message(to, f"{prefix}{part}")
+        await asyncio.sleep(0.5)
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 async def run_kavach(parsed: dict):
@@ -402,3 +531,16 @@ async def send_wa_message(to: str, text: str):
             "Content-Type": "application/json"
         })
         print(f"WhatsApp send to {to}: {resp.status_code} — {resp.text}")
+        
+async def translate_with_groq(text: str, language: str) -> str:
+    from groq import AsyncGroq
+    client = AsyncGroq(api_key=os.getenv("GROQ_API_KEY"))
+    resp = await client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{
+            "role": "user",
+            "content": f"Translate the following WhatsApp message to {language}. Keep emojis and *bold* formatting. Return only the translation, nothing else.\n\n{text}"
+        }],
+        max_tokens=200,
+    )
+    return resp.choices[0].message.content.strip()
